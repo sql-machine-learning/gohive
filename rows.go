@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"time"
 
-        "github.com/sql-machine-learning/sqlflow/gohive/service-rpc/gen-go/tcliservice"
+	"github.com/sql-machine-learning/sqlflow/gohive/service-rpc/gen-go/tcliservice"
 )
 
 // rowSet implements the interface database/sql/driver.Rows.
@@ -20,10 +20,10 @@ type rowSet struct {
 	columns    []*tcliservice.TColumnDesc
 	columnStrs []string
 
-        offset    int
-	rowSet    *tcliservice.TRowSet
+	offset int
+	rowSet *tcliservice.TRowSet
 
-        // resultSet is column-oriented storage format
+	// resultSet is column-oriented storage format
 	resultSet [][]interface{}
 	status    *Status
 }
@@ -45,24 +45,24 @@ func (r *rowSet) Next(dest []driver.Value) error {
 	if !r.status.isFinished() {
 		return fmt.Errorf("job failed.")
 	}
-        // First execution or reach the end of the current result set.
-        if r.resultSet == nil || r.offset >= len(r.resultSet[0]) {
-                r.offset = 0
-	        r.batchFetch()
-        }
+	// First execution or reach the end of the current result set.
+	if r.resultSet == nil || r.offset >= len(r.resultSet[0]) {
+		r.offset = 0
+		r.batchFetch()
+	}
 
 	if len(r.resultSet) <= 0 {
 		return fmt.Errorf("the length of resultSet is not greater than zero.")
 	}
-        // Fill in dest with one single row data.
+	// Fill in dest with one single row data.
 	for colIndex, values := range r.resultSet {
-                // Reach to the end of the last result set.
-                if len(values) == 0 {
-                        return io.EOF
-                }
+		// Reach to the end of the last result set.
+		if len(values) == 0 {
+			return io.EOF
+		}
 		dest[colIndex] = values[r.offset]
 	}
-        r.offset++
+	r.offset++
 	return nil
 }
 
@@ -93,7 +93,7 @@ func (r *rowSet) Close() (err error) {
 }
 
 func (r *rowSet) ColumnTypeDatabaseTypeName(i int) string {
-        return r.columns[i].TypeDesc.Types[0].PrimitiveEntry.Type.String()
+	return r.columns[i].TypeDesc.Types[0].PrimitiveEntry.Type.String()
 }
 
 // Issue a thrift call to check for the job's current status.
