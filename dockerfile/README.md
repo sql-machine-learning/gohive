@@ -9,10 +9,10 @@ The general usage is that we check out the source code on the host computer, the
 The following command
 
 ```bash
-go get github.com/sql-machine-learning/sqlflow/gohive
+go get github.com/sql-machine-learning/gohive
 ```
 
-clones GoHive to `$GOPATH/src/github.com/sql-machine-learning/sqlflow/gohive`.
+clones GoHive to `$GOPATH/src/github.com/sql-machine-learning/gohive`.
 
 ## Build the Docker Image
 
@@ -30,7 +30,7 @@ The following command starts a container and maps the `$GOPATH` directory on the
 
 ```bash
 docker run --rm -it -v $GOPATH:/go \
-    -w /go/src/github.com/sql-machine-learning/sqlflow/gohive \
+    -w /go/src/github.com/sql-machine-learning/gohive \
     gohive:dev bash
 ```
 
