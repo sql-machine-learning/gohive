@@ -30,7 +30,7 @@ The following command starts a container with Hive running inside, so could we b
 
 ```bash
 docker run --rm -it -v $GOPATH:/go \
-    -w /go/src/github.com/sql-machine-learning/gohive \
+    -w /go/src/sqlflow.org/gohive \
     gohive:dev bash
 ```
 
