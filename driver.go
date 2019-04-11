@@ -5,8 +5,8 @@ import (
 	"database/sql/driver"
 	"errors"
 
-	"git.apache.org/thrift.git/lib/go/thrift"
-	"github.com/sql-machine-learning/gohive/service-rpc/gen-go/tcliservice"
+	"sqlflow.org/gohive/git.apache.org/thrift.git/lib/go/thrift"
+	"sqlflow.org/gohive/service-rpc/gen-go/tcliservice"
 )
 
 type drv struct{}
