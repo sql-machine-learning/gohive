@@ -1,32 +1,32 @@
-# Build and Test in Docker Containers
+# GoHive: Build and Test in Docker Containers
 
 GoHive is a Hive driver for Go's database API.  To build and test it, we need not only the building tools but also Hive.  For the convenience of contributors, we install all tools into a Docker image so could we run and test in a Docker container.
 
 The general usage is that we check out the source code on the host computer, then we start a Docker container and run building tools in the container.  The critical point is that we map the source code directory into the container.  Feel free to use any of your favorite editor, Emacs, Vim, Eclipse, installed and running on the host.
 
+
 ## Check out the Source Code
 
-The following command
+Run the following command to clone GoHive to `$GOPATH/src/sqlflow.org/gohive` on your host computer:
 
 ```bash
-go get github.com/sql-machine-learning/gohive
+go get sqlflow.org/gohive
 ```
 
-clones GoHive to `$GOPATH/src/github.com/sql-machine-learning/gohive`.
 
 ## Build the Docker Image
 
-The following command
+Run the following command in the `/docker` directory to create the Docker image `gohive:dev`:
 
 ```bash
-docker build -t gohive:dev dockerfile
+cd gohive/docker
+docker build -t gohive:dev .
 ```
 
-in the Dockerfile directory creates the Docker image `gohive:dev`.
 
-## Build and Test in a Container
+## Build and Test GoHive
 
-The following command starts a container and maps the `$GOPATH` directory on the host to the `/go` directory in the container.  Please be aware that the Dockerfile configures `/go` as the `$GOPATH` in the container.
+The following command starts a container with Hive running inside, so could we build and test GoHive:
 
 ```bash
 docker run --rm -it -v $GOPATH:/go \
@@ -34,9 +34,8 @@ docker run --rm -it -v $GOPATH:/go \
     gohive:dev bash
 ```
 
-After the container prints many lines of logs showing that the Hive server is starting, we can build and run tests:
+The `-v` option maps `$GOPATH` on the host to `/go` in the container.  Please be aware that the Dockerfile configures `/go` as the `$GOPATH` in the container.  After many lines of logs scroll up while the Hive server starts, there comes the shell prompt, where we can run the following command to build and run tests:
 
-```
-go build
+```bash
 go test -v
 ```
