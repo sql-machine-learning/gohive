@@ -5,8 +5,8 @@ import (
 	"database/sql/driver"
 	"errors"
 
-	"sqlflow.org/gohive/git.apache.org/thrift.git/lib/go/thrift"
-	"sqlflow.org/gohive/service-rpc/gen-go/tcliservice"
+	"sqlflow.org/gohive/hiveserver2"
+	"sqlflow.org/gohive/thrift"
 )
 
 type drv struct{}
@@ -30,8 +30,8 @@ func (d drv) Open(dsn string) (driver.Conn, error) {
 	}
 
 	protocol := thrift.NewTBinaryProtocolFactoryDefault()
-	client := tcliservice.NewTCLIServiceClientFactory(transport, protocol)
-	s := tcliservice.NewTOpenSessionReq()
+	client := hiveserver2.NewTCLIServiceClientFactory(transport, protocol)
+	s := hiveserver2.NewTOpenSessionReq()
 	s.ClientProtocol = 6
 	if cfg.User != "" {
 		s.Username = &cfg.User
