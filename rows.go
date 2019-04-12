@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/sql-machine-learning/gohive/service-rpc/gen-go/tcliservice"
+	"sqlflow.org/gohive/service-rpc/gen-go/tcliservice"
 )
 
 // rowSet implements the interface database/sql/driver.Rows.
