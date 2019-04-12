@@ -156,6 +156,5 @@ RUN mkdir -p /go/bin
 ENV GOPATH /go
 ENV PATH $PATH:$GOPATH/bin
 
-# Install Go's dependency management tool.
-RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-
+RUN echo "go get -t sqlflow.org/gohive && go test -v sqlflow.org/gohive" > /build_and_test.bash
+RUN chmod +x /build_and_test.bash

@@ -1,0 +1,12 @@
+language: go
+
+branches:
+  only:
+  - gh-pages
+  - /.*/
+
+service:
+  - docker
+
+script:
+  - docker run --rm -it sqlflow/gohive:dev /build_and_test.bash
