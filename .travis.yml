@@ -2,11 +2,10 @@ language: go
 
 branches:
   only:
-  - gh-pages
   - /.*/
 
 service:
   - docker
 
 script:
-  - docker run --rm -it sqlflow/gohive:dev /build_and_test.bash
+  - docker run --rm -v $GOPATH:/go -w /go/src/github.com/sql-machine-learning/gohive sqlflow/gohive:dev /build_and_test.bash
