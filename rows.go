@@ -8,20 +8,20 @@ import (
 	"reflect"
 	"time"
 
-	"sqlflow.org/gohive/service-rpc/gen-go/tcliservice"
+	"sqlflow.org/gohive/hiveserver2"
 )
 
 // rowSet implements the interface database/sql/driver.Rows.
 type rowSet struct {
-	thrift    *tcliservice.TCLIServiceClient
-	operation *tcliservice.TOperationHandle
+	thrift    *hiveserver2.TCLIServiceClient
+	operation *hiveserver2.TOperationHandle
 	options   Options
 
-	columns    []*tcliservice.TColumnDesc
+	columns    []*hiveserver2.TColumnDesc
 	columnStrs []string
 
 	offset int
-	rowSet *tcliservice.TRowSet
+	rowSet *hiveserver2.TRowSet
 
 	// resultSet is column-oriented storage format
 	resultSet [][]interface{}
@@ -29,7 +29,7 @@ type rowSet struct {
 }
 
 type Status struct {
-	state *tcliservice.TOperationState
+	state *hiveserver2.TOperationState
 }
 
 func (r *rowSet) Next(dest []driver.Value) error {
@@ -98,7 +98,7 @@ func (r *rowSet) ColumnTypeDatabaseTypeName(i int) string {
 
 // Issue a thrift call to check for the job's current status.
 func (r *rowSet) poll() error {
-	req := tcliservice.NewTGetOperationStatusReq()
+	req := hiveserver2.NewTGetOperationStatusReq()
 	req.OperationHandle = r.operation
 
 	resp, err := r.thrift.GetOperationStatus(req)
@@ -123,7 +123,7 @@ func (r *rowSet) wait() error {
 		}
 		if r.status.isStopped() {
 			if r.status.isFinished() {
-				metadataReq := tcliservice.NewTGetResultSetMetadataReq()
+				metadataReq := hiveserver2.NewTGetResultSetMetadataReq()
 				metadataReq.OperationHandle = r.operation
 
 				metadataResp, err := r.thrift.GetResultSetMetadata(metadataReq)
@@ -145,9 +145,9 @@ func (r *rowSet) wait() error {
 }
 
 func (r *rowSet) batchFetch() error {
-	fetchReq := tcliservice.NewTFetchResultsReq()
+	fetchReq := hiveserver2.NewTFetchResultsReq()
 	fetchReq.OperationHandle = r.operation
-	fetchReq.Orientation = tcliservice.TFetchOrientation_FETCH_NEXT
+	fetchReq.Orientation = hiveserver2.TFetchOrientation_FETCH_NEXT
 	fetchReq.MaxRows = r.options.BatchSize
 
 	resp, err := r.thrift.FetchResults(fetchReq)
@@ -174,7 +174,7 @@ func (r *rowSet) batchFetch() error {
 	return nil
 }
 
-func convertColumn(col *tcliservice.TColumn) (colValues interface{}, length int) {
+func convertColumn(col *hiveserver2.TColumn) (colValues interface{}, length int) {
 	switch {
 	case col.IsSetStringVal():
 		return col.GetStringVal().GetValues(), len(col.GetStringVal().GetValues())
@@ -200,21 +200,21 @@ func (s Status) isStopped() bool {
 		return false
 	}
 	switch *s.state {
-	case tcliservice.TOperationState_FINISHED_STATE,
-		tcliservice.TOperationState_CANCELED_STATE,
-		tcliservice.TOperationState_CLOSED_STATE,
-		tcliservice.TOperationState_ERROR_STATE:
+	case hiveserver2.TOperationState_FINISHED_STATE,
+		hiveserver2.TOperationState_CANCELED_STATE,
+		hiveserver2.TOperationState_CLOSED_STATE,
+		hiveserver2.TOperationState_ERROR_STATE:
 		return true
 	}
 	return false
 }
 
 func (s Status) isFinished() bool {
-	return s.state != nil && *s.state == tcliservice.TOperationState_FINISHED_STATE
+	return s.state != nil && *s.state == hiveserver2.TOperationState_FINISHED_STATE
 }
 
-func newRows(thrift *tcliservice.TCLIServiceClient,
-	operation *tcliservice.TOperationHandle,
+func newRows(thrift *hiveserver2.TCLIServiceClient,
+	operation *hiveserver2.TOperationHandle,
 	options Options) driver.Rows {
 	return &rowSet{thrift, operation, options, nil, nil,
 		0, nil, nil, nil}

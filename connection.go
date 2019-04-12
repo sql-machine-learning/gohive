@@ -5,7 +5,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 
-	"sqlflow.org/gohive/service-rpc/gen-go/tcliservice"
+	"sqlflow.org/gohive/hiveserver2"
 )
 
 // Options for opened Hive sessions.
@@ -15,8 +15,8 @@ type Options struct {
 }
 
 type Connection struct {
-	thrift  *tcliservice.TCLIServiceClient
-	session *tcliservice.TSessionHandle
+	thrift  *hiveserver2.TCLIServiceClient
+	session *hiveserver2.TSessionHandle
 	options Options
 }
 
@@ -34,7 +34,7 @@ func (c *Connection) isOpen() bool {
 
 func (c *Connection) Close() error {
 	if c.isOpen() {
-		closeReq := tcliservice.NewTCloseSessionReq()
+		closeReq := hiveserver2.NewTCloseSessionReq()
 		closeReq.SessionHandle = c.session
 		resp, err := c.thrift.CloseSession(closeReq)
 		if err != nil {
@@ -47,7 +47,7 @@ func (c *Connection) Close() error {
 }
 
 func (c *Connection) QueryContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Rows, error) {
-	executeReq := tcliservice.NewTExecuteStatementReq()
+	executeReq := hiveserver2.NewTExecuteStatementReq()
 	executeReq.SessionHandle = c.session
 	executeReq.Statement = query
 
@@ -63,7 +63,8 @@ func (c *Connection) QueryContext(ctx context.Context, query string, args []driv
 	return newRows(c.thrift, resp.OperationHandle, c.options), nil
 }
 
-func isSuccessStatus(p *tcliservice.TStatus) bool {
+func isSuccessStatus(p *hiveserver2.TStatus) bool {
 	status := p.GetStatusCode()
-	return status == tcliservice.TStatusCode_SUCCESS_STATUS || status == tcliservice.TStatusCode_SUCCESS_WITH_INFO_STATUS
+	return status == hiveserver2.TStatusCode_SUCCESS_STATUS ||
+		status == hiveserver2.TStatusCode_SUCCESS_WITH_INFO_STATUS
 }
