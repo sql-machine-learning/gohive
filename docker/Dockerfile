@@ -14,8 +14,8 @@ ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
 ENV HADOOP_VERSION 3.2.0 
 ENV HADOOP_URL https://archive.apache.org/dist/hadoop/common/stable/hadoop-$HADOOP_VERSION.tar.gz
 RUN set -x \
-    && curl -fSL "$HADOOP_URL" -o /tmp/hadoop.tar.gz \
-    && tar -xvf /tmp/hadoop.tar.gz -C /opt/ \
+    && curl -fsSL "$HADOOP_URL" -o /tmp/hadoop.tar.gz \
+    && tar -xzf /tmp/hadoop.tar.gz -C /opt/ \
     && rm /tmp/hadoop.tar.gz*
 
 # Configure Hadoop
@@ -112,7 +112,7 @@ RUN apt-get install -y wget procps
 
 WORKDIR /opt
 RUN wget --quiet http://archive.apache.org/dist/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz
-RUN tar -xzvf apache-hive-$HIVE_VERSION-bin.tar.gz && \
+RUN tar -xzf apache-hive-$HIVE_VERSION-bin.tar.gz && \
 	mv apache-hive-$HIVE_VERSION-bin hive && \
 	rm apache-hive-$HIVE_VERSION-bin.tar.gz && \
 	apt-get clean && \
@@ -135,7 +135,7 @@ VOLUME /var/lib/mysql
 
 WORKDIR /tmp
 RUN wget --quiet https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.47.tar.gz
-RUN tar -xf mysql-connector-java-5.1.47.tar.gz
+RUN tar -xzf mysql-connector-java-5.1.47.tar.gz
 RUN cp mysql-connector-java-5.1.47/mysql-connector-java-5.1.47.jar /opt/hive/lib/ 
 RUN rm -rf /tmp/mysql-connector-java-5.1.47.tar.gz
 RUN rm -rf /tmp/mysql-connector-java-5.1.47
