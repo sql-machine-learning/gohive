@@ -33,29 +33,35 @@ func TestQuery(t *testing.T) {
 }
 
 func TestColumnName(t *testing.T) {
-        a := assert.New(t)
+	a := assert.New(t)
 	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
 	rows, err := db.Query("SELECT customerID, gender FROM churn.train")
 	assert.Nil(t, err)
 	defer db.Close()
 	defer rows.Close()
 
-        cl, err := rows.Columns()
+	cl, err := rows.Columns()
 	a.NoError(err)
 	a.Equal(cl, []string{"customerid", "gender"})
 }
 
 func TestColumnType(t *testing.T) {
-        a := assert.New(t)
+	a := assert.New(t)
 	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
 	rows, err := db.Query("SELECT customerID, gender FROM churn.train")
 	assert.Nil(t, err)
 	defer db.Close()
 	defer rows.Close()
 
-        ct, err := rows.ColumnTypes()
+	ct, err := rows.ColumnTypes()
 	a.NoError(err)
-        for _, c := range ct {
-                assert.Equal(t, c.DatabaseTypeName(), "VARCHAR_TYPE")
+	for _, c := range ct {
+		assert.Equal(t, c.DatabaseTypeName(), "VARCHAR_TYPE")
 	}
+}
+
+func TestPing(t *testing.T) {
+	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
+	err := db.Ping()
+	assert.Nil(t, err)
 }
