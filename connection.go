@@ -32,6 +32,26 @@ func (c *Connection) isOpen() bool {
 	return c.session != nil
 }
 
+// As hiveserver2 thrift api does not provide Ping method,
+// we use GetInfo instead to check the health of hiveserver2.
+func (c *Connection) Ping(ctx context.Context) (err error) {
+	getInfoReq := hiveserver2.NewTGetInfoReq()
+	getInfoReq.SessionHandle = c.session
+	getInfoReq.InfoType = hiveserver2.TGetInfoType_CLI_SERVER_NAME
+
+	resp, err := c.thrift.GetInfo(getInfoReq)
+
+	if err != nil {
+		return fmt.Errorf("Error in GetInfo: %v", err)
+	}
+
+	if !isSuccessStatus(resp.Status) {
+		return fmt.Errorf("Error from server: %s", resp.Status.String())
+	}
+
+	return nil
+}
+
 func (c *Connection) Close() error {
 	if c.isOpen() {
 		closeReq := hiveserver2.NewTCloseSessionReq()
