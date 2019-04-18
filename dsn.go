@@ -17,8 +17,8 @@ var (
 	reUserPasswd = regexp.MustCompile(`([^:@]+)(:[^:@]+)?@`)
 )
 
-// parseDSN requires DSN names in the format [user[:password]@]addr/dbname.
-func parseDSN(dsn string) (*config, error) {
+// ParseDSN requires DSN names in the format [user[:password]@]addr/dbname.
+func ParseDSN(dsn string) (*config, error) {
 	// Please read https://play.golang.org/p/_CSLvl1AxOX before code review.
 	sub := reDSN.FindStringSubmatch(dsn)
 	if len(sub) != 3 {
@@ -33,4 +33,9 @@ func parseDSN(dsn string) (*config, error) {
 		return &config{User: up[1], Addr: sub[2]}, nil
 	}
 	return &config{Addr: sub[2]}, nil
+}
+
+// FormatDSN outputs a string in the format "user:password@address"
+func (cfg *config) FormatDSN() string {
+	return fmt.Sprintf("%s:%s@%s", cfg.User, cfg.Passwd, cfg.Addr)
 }

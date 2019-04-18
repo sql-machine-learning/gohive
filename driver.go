@@ -12,7 +12,7 @@ import (
 type drv struct{}
 
 func (d drv) Open(dsn string) (driver.Conn, error) {
-	cfg, err := parseDSN(dsn)
+	cfg, err := ParseDSN(dsn)
 	if err != nil {
 		return nil, err
 	}
