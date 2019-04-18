@@ -34,3 +34,8 @@ func ParseDSN(dsn string) (*config, error) {
 	}
 	return &config{Addr: sub[2]}, nil
 }
+
+// FormatDSN outputs a string in the format "user:password@address"
+func (cfg *config) FormatDSN() string {
+	return fmt.Sprintf("%s:%s@%s", cfg.User, cfg.Passwd, cfg.Addr)
+}
