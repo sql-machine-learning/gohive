@@ -76,6 +76,52 @@ func TestColumnType(t *testing.T) {
 	}
 }
 
+func TestShowDBColumnType(t *testing.T) {
+	a := assert.New(t)
+	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
+	rows, err := db.Query("show databases")
+
+	defer db.Close()
+	defer rows.Close()
+
+	cts, err := rows.ColumnTypes()
+	a.NoError(err)
+	for _, ct := range cts {
+		assert.Equal(t, reflect.TypeOf("string"), ct.ScanType())
+	}
+}
+
+func TestUseDBColumnType(t *testing.T) {
+	a := assert.New(t)
+	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
+	rows, err := db.Query("use churn")
+
+	defer db.Close()
+	defer rows.Close()
+
+	cts, err := rows.ColumnTypes()
+	a.NoError(err)
+	for _, ct := range cts {
+		assert.Equal(t, reflect.TypeOf("string"), ct.ScanType())
+	}
+}
+
+func TestShowTablesColumnType(t *testing.T) {
+	a := assert.New(t)
+	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
+	db.Query("use churn")
+	rows, err := db.Query("show tables")
+
+	defer db.Close()
+	defer rows.Close()
+
+	cts, err := rows.ColumnTypes()
+	a.NoError(err)
+	for _, ct := range cts {
+		assert.Equal(t, reflect.TypeOf("string"), ct.ScanType())
+	}
+}
+
 func TestPing(t *testing.T) {
 	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
 	err := db.Ping()
