@@ -92,6 +92,44 @@ func (r *rowSet) Close() (err error) {
 	return nil
 }
 
+var (
+	scanTypeVarchar = reflect.TypeOf("varchar")
+	scanTypeBool    = reflect.TypeOf(true)
+	scanTypeFloat32 = reflect.TypeOf(float32(0))
+	scanTypeFloat64 = reflect.TypeOf(float64(0))
+	scanTypeInt8    = reflect.TypeOf(int8(0))
+	scanTypeInt16   = reflect.TypeOf(int16(0))
+	scanTypeInt32   = reflect.TypeOf(int32(0))
+	scanTypeInt64   = reflect.TypeOf(int64(0))
+	scanTypeUnknown = reflect.TypeOf(new(interface{}))
+)
+
+func (r *rowSet) ColumnTypeScanType(i int) reflect.Type {
+	ct := r.columns[i].TypeDesc.Types[0].PrimitiveEntry.Type
+	switch ct {
+	case hiveserver2.TTypeId_VARCHAR_TYPE:
+		return scanTypeVarchar
+	case hiveserver2.TTypeId_BOOLEAN_TYPE:
+		return scanTypeBool
+	case hiveserver2.TTypeId_TINYINT_TYPE:
+		return scanTypeInt8
+	case hiveserver2.TTypeId_SMALLINT_TYPE:
+		return scanTypeInt16
+	case hiveserver2.TTypeId_INT_TYPE:
+		return scanTypeInt32
+	case hiveserver2.TTypeId_BIGINT_TYPE:
+		return scanTypeInt64
+	case hiveserver2.TTypeId_TIMESTAMP_TYPE:
+		return scanTypeInt64
+	case hiveserver2.TTypeId_FLOAT_TYPE:
+		return scanTypeFloat32
+	case hiveserver2.TTypeId_DOUBLE_TYPE:
+		return scanTypeInt64
+	default:
+		return scanTypeUnknown
+	}
+}
+
 func (r *rowSet) ColumnTypeDatabaseTypeName(i int) string {
 	return r.columns[i].TypeDesc.Types[0].PrimitiveEntry.Type.String()
 }
