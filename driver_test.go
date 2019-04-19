@@ -2,6 +2,7 @@ package gohive
 
 import (
 	"database/sql"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -45,7 +46,7 @@ func TestColumnName(t *testing.T) {
 	a.Equal(cl, []string{"customerid", "gender"})
 }
 
-func TestColumnType(t *testing.T) {
+func TestColumnTypeName(t *testing.T) {
 	a := assert.New(t)
 	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
 	rows, err := db.Query("SELECT customerID, gender FROM churn.train")
@@ -57,6 +58,21 @@ func TestColumnType(t *testing.T) {
 	a.NoError(err)
 	for _, c := range ct {
 		assert.Equal(t, c.DatabaseTypeName(), "VARCHAR_TYPE")
+	}
+}
+
+func TestColumnType(t *testing.T) {
+	a := assert.New(t)
+	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
+	rows, err := db.Query("SELECT customerID, gender FROM churn.train")
+
+	defer db.Close()
+	defer rows.Close()
+
+	cts, err := rows.ColumnTypes()
+	a.NoError(err)
+	for _, ct := range cts {
+		assert.Equal(t, reflect.TypeOf("string"), ct.ScanType())
 	}
 }
 
