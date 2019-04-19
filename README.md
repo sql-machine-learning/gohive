@@ -24,3 +24,7 @@ Your contribution to GoHive is very welcome!  Please refer to [this document](do
 ## License
 
 GoHive comes with [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+## Acknowledgement
+
+This implementation is strongly inspired by https://github.com/derekgr/hivething.
