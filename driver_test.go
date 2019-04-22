@@ -81,3 +81,11 @@ func TestPing(t *testing.T) {
 	err := db.Ping()
 	assert.Nil(t, err)
 }
+
+func TestExec(t *testing.T) {
+	a := assert.New(t)
+	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
+	_, err := db.Exec("insert into churn.test (gender) values ('Female')")
+	defer db.Close()
+	a.NoError(err)
+}
