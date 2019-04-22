@@ -3,7 +3,7 @@ package gohive
 import (
 	"fmt"
 	"regexp"
-        "strings"
+	"strings"
 )
 
 type Config struct {
@@ -29,12 +29,12 @@ func ParseDSN(dsn string) (*Config, error) {
 	addr := ""
 	dbname := ""
 	loc := strings.IndexRune(sub[2], '/')
-        if loc > -1 {
-                addr = sub[2][:loc]
-                dbname = sub[2][loc+1:]
-        } else {
-                addr = sub[2]
-        }
+	if loc > -1 {
+		addr = sub[2][:loc]
+		dbname = sub[2][loc+1:]
+	} else {
+		addr = sub[2]
+	}
 	up := reUserPasswd.FindStringSubmatch(sub[1])
 	if len(up) == 3 {
 		if len(up[2]) > 0 {
@@ -47,9 +47,9 @@ func ParseDSN(dsn string) (*Config, error) {
 
 // FormatDSN outputs a string in the format "user:password@address"
 func (cfg *Config) FormatDSN() string {
-        if len(cfg.DBName) > 0 {
-	        return fmt.Sprintf("%s:%s@%s/%s", cfg.User, cfg.Passwd, cfg.Addr, cfg.DBName)
-        } else {
-                return fmt.Sprintf("%s:%s@%s", cfg.User, cfg.Passwd, cfg.Addr)
-        }
+	if len(cfg.DBName) > 0 {
+		return fmt.Sprintf("%s:%s@%s/%s", cfg.User, cfg.Passwd, cfg.Addr, cfg.DBName)
+	} else {
+		return fmt.Sprintf("%s:%s@%s", cfg.User, cfg.Passwd, cfg.Addr)
+	}
 }
