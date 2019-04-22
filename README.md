@@ -4,6 +4,8 @@
 
 To access databases, Go programmers call the standard library `database/sql`, which relies on *drivers* to talk to database management systems.  GoHive is such a driver that talks to Hive via [HiveServer2](https://cwiki.apache.org/confluence/display/Hive/Setting+Up+HiveServer2#SettingUpHiveServer2-HiveServer2), a Thrift server.
 
+We found many open source Hive clients in Go. However we cannot find one completely compatible with the database/sql driver interface define in Go's standard library, so we developed our own solution and will continue to maintain and improve this project in the long run.
+
 
 ## For Users
 
