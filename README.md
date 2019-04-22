@@ -2,8 +2,13 @@
 
 [![Build Status](https://travis-ci.org/sql-machine-learning/gohive.svg?branch=develop)](https://travis-ci.org/travis-ci/travis-web)
 
-To access databases, Go programmers call the standard library `database/sql`, which relies on *drivers* to talk to database management systems.  GoHive is such a driver that talks to Hive via [HiveServer2](https://cwiki.apache.org/confluence/display/Hive/Setting+Up+HiveServer2#SettingUpHiveServer2-HiveServer2), a Thrift server.
+A Hive-SQL-Driver for Go's [database/sql](https://golang.org/pkg/database/sql/) package.
 
+## Features
+- Standard [`datbase/sql`](https://golang.org/pkg/database/sql/) API.
+- Light weight and fast.
+- Native Go implemenation. No C/Python/Java bindings, just pure Go.
+- Connection via [HiveServer2](https://cwiki.apache.org/confluence/display/Hive/Setting+Up+HiveServer2#SettingUpHiveServer2-HiveServer2) Thrift server.
 
 ## For Users
 
