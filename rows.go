@@ -107,6 +107,8 @@ var (
 func (r *rowSet) ColumnTypeScanType(i int) reflect.Type {
 	ct := r.columns[i].TypeDesc.Types[0].PrimitiveEntry.Type
 	switch ct {
+	case hiveserver2.TTypeId_STRING_TYPE:
+		return scanTypeVarchar
 	case hiveserver2.TTypeId_VARCHAR_TYPE:
 		return scanTypeVarchar
 	case hiveserver2.TTypeId_BOOLEAN_TYPE:

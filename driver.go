@@ -39,6 +39,11 @@ func (d drv) Open(dsn string) (driver.Conn, error) {
 			s.Password = &cfg.Passwd
 		}
 	}
+	if cfg.DBName != "" {
+		config := make(map[string]string)
+		config["use:database"] = cfg.DBName
+		s.Configuration = config
+	}
 	session, _ := client.OpenSession(s)
 	if err != nil {
 		return nil, err

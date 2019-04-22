@@ -16,7 +16,7 @@ func TestOpenConnection(t *testing.T) {
 
 func TestQuery(t *testing.T) {
 	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
-	rows, err := db.Query("SELECT customerID, gender FROM churn.train")
+	rows, err := db.Query("SELECT customerID, gender FROM train")
 	assert.Nil(t, err)
 	defer db.Close()
 	defer rows.Close()
@@ -36,7 +36,7 @@ func TestQuery(t *testing.T) {
 func TestColumnName(t *testing.T) {
 	a := assert.New(t)
 	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
-	rows, err := db.Query("SELECT customerID, gender FROM churn.train")
+	rows, err := db.Query("SELECT customerID, gender FROM train")
 	assert.Nil(t, err)
 	defer db.Close()
 	defer rows.Close()
@@ -49,7 +49,7 @@ func TestColumnName(t *testing.T) {
 func TestColumnTypeName(t *testing.T) {
 	a := assert.New(t)
 	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
-	rows, err := db.Query("SELECT customerID, gender FROM churn.train")
+	rows, err := db.Query("SELECT customerID, gender FROM train")
 	assert.Nil(t, err)
 	defer db.Close()
 	defer rows.Close()
@@ -64,7 +64,52 @@ func TestColumnTypeName(t *testing.T) {
 func TestColumnType(t *testing.T) {
 	a := assert.New(t)
 	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
-	rows, err := db.Query("SELECT customerID, gender FROM churn.train")
+	rows, err := db.Query("SELECT customerID, gender FROM train")
+
+	defer db.Close()
+	defer rows.Close()
+
+	cts, err := rows.ColumnTypes()
+	a.NoError(err)
+	for _, ct := range cts {
+		assert.Equal(t, reflect.TypeOf("string"), ct.ScanType())
+	}
+}
+
+func TestShowCreateTable(t *testing.T) {
+	a := assert.New(t)
+	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
+	rows, err := db.Query("show create table train")
+
+	defer db.Close()
+	defer rows.Close()
+
+	cts, err := rows.ColumnTypes()
+	a.NoError(err)
+	for _, ct := range cts {
+		assert.Equal(t, reflect.TypeOf("string"), ct.ScanType())
+	}
+}
+
+func TestDescribeTable(t *testing.T) {
+	a := assert.New(t)
+	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
+	rows, err := db.Query("describe train")
+
+	defer db.Close()
+	defer rows.Close()
+
+	cts, err := rows.ColumnTypes()
+	a.NoError(err)
+	for _, ct := range cts {
+		assert.Equal(t, reflect.TypeOf("string"), ct.ScanType())
+	}
+}
+
+func TestShowDatabases(t *testing.T) {
+	a := assert.New(t)
+	db, _ := sql.Open("hive", "127.0.0.1:10000")
+	rows, err := db.Query("show databases")
 
 	defer db.Close()
 	defer rows.Close()
