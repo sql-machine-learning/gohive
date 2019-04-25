@@ -36,7 +36,7 @@ func TestQuery(t *testing.T) {
 func TestColumnName(t *testing.T) {
 	a := assert.New(t)
 	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
-	rows, err := db.Query("SELECT customerID, gender FROM train")
+	rows, err := db.Query("SELECT customerID, gender FROM train;")
 	assert.Nil(t, err)
 	defer db.Close()
 	defer rows.Close()
