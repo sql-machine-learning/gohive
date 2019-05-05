@@ -25,7 +25,10 @@ func (c *Connection) Begin() (driver.Tx, error) {
 }
 
 func (c *Connection) Prepare(query string) (driver.Stmt, error) {
-	return nil, nil
+	if !c.isOpen() {
+		return nil, fmt.Errorf("driver: bad connection")
+	}
+	return &hiveStmt{hc: c}, nil
 }
 
 func (c *Connection) isOpen() bool {
