@@ -8,36 +8,36 @@ import (
 	"sqlflow.org/gohive/hiveserver2"
 )
 
-// Options for opened Hive sessions.
-type Options struct {
+// hiveOptions for opened Hive sessions.
+type hiveOptions struct {
 	PollIntervalSeconds int64
 	BatchSize           int64
 }
 
-type Connection struct {
+type hiveConnection struct {
 	thrift  *hiveserver2.TCLIServiceClient
 	session *hiveserver2.TSessionHandle
-	options Options
+	options hiveOptions
 }
 
-func (c *Connection) Begin() (driver.Tx, error) {
+func (c *hiveConnection) Begin() (driver.Tx, error) {
 	return nil, nil
 }
 
-func (c *Connection) Prepare(query string) (driver.Stmt, error) {
+func (c *hiveConnection) Prepare(query string) (driver.Stmt, error) {
 	if !c.isOpen() {
 		return nil, fmt.Errorf("driver: bad connection")
 	}
 	return &hiveStmt{hc: c}, nil
 }
 
-func (c *Connection) isOpen() bool {
+func (c *hiveConnection) isOpen() bool {
 	return c.session != nil
 }
 
 // As hiveserver2 thrift api does not provide Ping method,
 // we use GetInfo instead to check the health of hiveserver2.
-func (c *Connection) Ping(ctx context.Context) (err error) {
+func (c *hiveConnection) Ping(ctx context.Context) (err error) {
 	getInfoReq := hiveserver2.NewTGetInfoReq()
 	getInfoReq.SessionHandle = c.session
 	getInfoReq.InfoType = hiveserver2.TGetInfoType_CLI_SERVER_NAME
@@ -55,7 +55,7 @@ func (c *Connection) Ping(ctx context.Context) (err error) {
 	return nil
 }
 
-func (c *Connection) Close() error {
+func (c *hiveConnection) Close() error {
 	if c.isOpen() {
 		closeReq := hiveserver2.NewTCloseSessionReq()
 		closeReq.SessionHandle = c.session
@@ -77,7 +77,7 @@ func removeLastSemicolon(s string) string {
 	return s
 }
 
-func (c *Connection) execute(ctx context.Context, query string, args []driver.NamedValue) (*hiveserver2.TExecuteStatementResp, error) {
+func (c *hiveConnection) execute(ctx context.Context, query string, args []driver.NamedValue) (*hiveserver2.TExecuteStatementResp, error) {
 	executeReq := hiveserver2.NewTExecuteStatementReq()
 	executeReq.SessionHandle = c.session
 	executeReq.Statement = removeLastSemicolon(query)
@@ -93,7 +93,7 @@ func (c *Connection) execute(ctx context.Context, query string, args []driver.Na
 	return resp, nil
 }
 
-func (c *Connection) QueryContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Rows, error) {
+func (c *hiveConnection) QueryContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Rows, error) {
 	resp, err := c.execute(ctx, query, args)
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func (c *Connection) QueryContext(ctx context.Context, query string, args []driv
 	return newRows(c.thrift, resp.OperationHandle, c.options), nil
 }
 
-func (c *Connection) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Result, error) {
+func (c *hiveConnection) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Result, error) {
 	resp, err := c.execute(ctx, query, args)
 	if err != nil {
 		return nil, err

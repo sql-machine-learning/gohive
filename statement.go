@@ -3,7 +3,7 @@ package gohive
 import "database/sql/driver"
 
 type hiveStmt struct {
-	hc *Connection
+	hc *hiveConnection
 }
 
 // TODO: We implements these methods in another pr
