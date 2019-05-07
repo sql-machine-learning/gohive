@@ -1,29 +1,27 @@
 package gohive
 
-import "database/sql/driver"
+import (
+	"database/sql/driver"
+)
 
 type hiveStmt struct {
-	hc *hiveConnection
+	hc    *hiveConnection
+	query string
 }
 
-// TODO: We implements these methods in another pr
-
 func (stmt *hiveStmt) Close() error {
-	return nil
+	panic("not implemented")
 }
 
 func (stmt *hiveStmt) NumInput() int {
-	return 0
+	panic("not implemented")
 }
 
-func (stmt *hiveStmt) ColumnConverter(idx int) driver.ValueConverter {
-	return nil
-}
-
+// Exec accepts stmt like: "INSERT INTO `TABLE` (f1, f2) VALUES(1.3, false)"
 func (stmt *hiveStmt) Exec(args []driver.Value) (driver.Result, error) {
-	return nil, nil
+	panic("not implemented")
 }
 
 func (stmt *hiveStmt) Query(args []driver.Value) (driver.Rows, error) {
-	return nil, nil
+	panic("not implemented")
 }

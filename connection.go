@@ -24,11 +24,11 @@ func (c *hiveConnection) Begin() (driver.Tx, error) {
 	return nil, nil
 }
 
-func (c *hiveConnection) Prepare(query string) (driver.Stmt, error) {
+func (c *hiveConnection) Prepare(qry string) (driver.Stmt, error) {
 	if !c.isOpen() {
 		return nil, fmt.Errorf("driver: bad connection")
 	}
-	return &hiveStmt{hc: c}, nil
+	return &hiveStmt{hc: c, query: qry}, nil
 }
 
 func (c *hiveConnection) isOpen() bool {
