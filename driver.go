@@ -49,8 +49,8 @@ func (d drv) Open(dsn string) (driver.Conn, error) {
 		return nil, err
 	}
 
-	options := Options{PollIntervalSeconds: 5, BatchSize: 100000}
-	conn := &Connection{client, session.SessionHandle, options}
+	options := hiveOptions{PollIntervalSeconds: 5, BatchSize: 100000}
+	conn := &hiveConnection{client, session.SessionHandle, options}
 	return conn, nil
 }
 

@@ -15,7 +15,7 @@ import (
 type rowSet struct {
 	thrift    *hiveserver2.TCLIServiceClient
 	operation *hiveserver2.TOperationHandle
-	options   Options
+	options   hiveOptions
 
 	columns    []*hiveserver2.TColumnDesc
 	columnStrs []string
@@ -25,10 +25,10 @@ type rowSet struct {
 
 	// resultSet is column-oriented storage format
 	resultSet [][]interface{}
-	status    *Status
+	status    *hiveStatus
 }
 
-type Status struct {
+type hiveStatus struct {
 	state *hiveserver2.TOperationState
 }
 
@@ -151,7 +151,7 @@ func (r *rowSet) poll() error {
 	if resp.OperationState == nil {
 		return errors.New("No error from GetStatus, but nil status!")
 	}
-	r.status = &Status{resp.OperationState}
+	r.status = &hiveStatus{resp.OperationState}
 	return nil
 }
 
@@ -235,7 +235,7 @@ func convertColumn(col *hiveserver2.TColumn) (colValues interface{}, length int)
 	}
 }
 
-func (s Status) isStopped() bool {
+func (s hiveStatus) isStopped() bool {
 	if s.state == nil {
 		return false
 	}
@@ -249,13 +249,13 @@ func (s Status) isStopped() bool {
 	return false
 }
 
-func (s Status) isFinished() bool {
+func (s hiveStatus) isFinished() bool {
 	return s.state != nil && *s.state == hiveserver2.TOperationState_FINISHED_STATE
 }
 
 func newRows(thrift *hiveserver2.TCLIServiceClient,
 	operation *hiveserver2.TOperationHandle,
-	options Options) driver.Rows {
+	options hiveOptions) driver.Rows {
 	return &rowSet{thrift, operation, options, nil, nil,
 		0, nil, nil, nil}
 }
