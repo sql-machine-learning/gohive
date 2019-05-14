@@ -143,6 +143,7 @@ RUN rm -rf /tmp/mysql-connector-java-5.1.47
 RUN mkdir /dataset
 COPY dataset/popularize_churn.sql /dataset/popularize_churn.sql
 COPY dataset/popularize_iris.sql /dataset/popularize_iris.sql
+COPY dataset/create_model_db.sql /dataset/create_model_db.sql
 
 # Install the Go compiler.
 RUN wget --quiet https://dl.google.com/go/go1.11.5.linux-amd64.tar.gz
@@ -155,6 +156,22 @@ ENV PATH $PATH:/usr/local/go/bin
 RUN mkdir -p /go/bin
 ENV GOPATH /go
 ENV PATH $PATH:$GOPATH/bin
+
+# Install python and tensorflow env for run test
+ARG CONDA_OS=Linux
+RUN cd / && curl -sL https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -o mconda-install.sh && \
+    bash -x mconda-install.sh -b -p miniconda && \
+    rm mconda-install.sh
+ENV PATH="/miniconda/bin:$PATH"
+
+RUN ls /miniconda/bin && /miniconda/bin/conda create -y -q -n sqlflow-dev python=3.6 && \
+    echo ". /miniconda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    echo "source activate sqlflow-dev" >> ~/.bashrc && \
+    bash -c "source activate sqlflow-dev && python -m pip install \
+    tensorflow==2.0.0-alpha0 \
+    mysql-connector-python \
+    impyla \
+    jupyter"
 
 RUN echo "go get -t sqlflow.org/gohive && go test -v sqlflow.org/gohive" > /build_and_test.bash
 RUN chmod +x /build_and_test.bash
