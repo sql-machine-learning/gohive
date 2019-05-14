@@ -172,6 +172,13 @@ RUN ls /miniconda/bin && /miniconda/bin/conda create -y -q -n sqlflow-dev python
     mysql-connector-python \
     impyla \
     jupyter"
+# Install protobuf
+RUN wget --quiet https://github.com/protocolbuffers/protobuf/releases/download/v3.6.1/protoc-3.6.1-linux-x86_64.zip && \
+apt-get install -y unzip && \
+unzip -qq protoc-3.6.1-linux-x86_64.zip -d /usr/local && \
+rm protoc-3.6.1-linux-x86_64.zip && \
+go get github.com/golang/protobuf/protoc-gen-go && \
+mv /go/bin/protoc-gen-go /usr/local/bin/
 
 RUN echo "go get -t sqlflow.org/gohive && go test -v sqlflow.org/gohive" > /build_and_test.bash
 RUN chmod +x /build_and_test.bash
