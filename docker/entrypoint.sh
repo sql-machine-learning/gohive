@@ -122,6 +122,5 @@ echo "waiting 30 seconds for hive to start..."
 sleep 30
 hive -f /dataset/popularize_churn.sql
 hive -f /dataset/popularize_iris.sql
-hive -f /dataset/create_model_db.sql
 
 exec $@
