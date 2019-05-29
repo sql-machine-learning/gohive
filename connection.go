@@ -1,6 +1,7 @@
 package gohive
 
 import (
+	"strings"
 	"context"
 	"database/sql/driver"
 	"fmt"
@@ -70,6 +71,7 @@ func (c *hiveConnection) Close() error {
 }
 
 func removeLastSemicolon(s string) string {
+	s = strings.TrimSpace(s)
 	n := len(s)
 	if n > 0 && s[n-1] == ';' {
 		return s[0 : n-1]
