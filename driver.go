@@ -44,7 +44,7 @@ func (d drv) Open(dsn string) (driver.Conn, error) {
 		config["use:database"] = cfg.DBName
 		s.Configuration = config
 	}
-	session, _ := client.OpenSession(s)
+	session, err := client.OpenSession(s)
 	if err != nil {
 		return nil, err
 	}
