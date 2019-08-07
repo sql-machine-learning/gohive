@@ -1,12 +1,12 @@
 package gohive
 
 import (
-	"strings"
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"strings"
 
-	"sqlflow.org/gohive/hiveserver2"
+	hiveserver2 "sqlflow.org/gohive/hiveserver2/gen-go/tcliservice"
 )
 
 // hiveOptions for opened Hive sessions.
@@ -19,6 +19,7 @@ type hiveConnection struct {
 	thrift  *hiveserver2.TCLIServiceClient
 	session *hiveserver2.TSessionHandle
 	options hiveOptions
+	ctx     context.Context
 }
 
 func (c *hiveConnection) Begin() (driver.Tx, error) {
@@ -43,7 +44,7 @@ func (c *hiveConnection) Ping(ctx context.Context) (err error) {
 	getInfoReq.SessionHandle = c.session
 	getInfoReq.InfoType = hiveserver2.TGetInfoType_CLI_SERVER_NAME
 
-	resp, err := c.thrift.GetInfo(getInfoReq)
+	resp, err := c.thrift.GetInfo(ctx, getInfoReq)
 
 	if err != nil {
 		return fmt.Errorf("Error in GetInfo: %v", err)
@@ -60,7 +61,7 @@ func (c *hiveConnection) Close() error {
 	if c.isOpen() {
 		closeReq := hiveserver2.NewTCloseSessionReq()
 		closeReq.SessionHandle = c.session
-		resp, err := c.thrift.CloseSession(closeReq)
+		resp, err := c.thrift.CloseSession(c.ctx, closeReq)
 		if err != nil {
 			return fmt.Errorf("Error closing session %s %s", resp, err)
 		}
@@ -84,7 +85,7 @@ func (c *hiveConnection) execute(ctx context.Context, query string, args []drive
 	executeReq.SessionHandle = c.session
 	executeReq.Statement = removeLastSemicolon(query)
 
-	resp, err := c.thrift.ExecuteStatement(executeReq)
+	resp, err := c.thrift.ExecuteStatement(c.ctx, executeReq)
 	if err != nil {
 		return nil, fmt.Errorf("Error in ExecuteStatement: %+v, %v", resp, err)
 	}
@@ -100,7 +101,7 @@ func (c *hiveConnection) QueryContext(ctx context.Context, query string, args []
 	if err != nil {
 		return nil, err
 	}
-	return newRows(c.thrift, resp.OperationHandle, c.options), nil
+	return newRows(c.thrift, resp.OperationHandle, c.options, ctx), nil
 }
 
 func (c *hiveConnection) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Result, error) {

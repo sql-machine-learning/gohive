@@ -1,12 +1,13 @@
 package gohive
 
 import (
+	"context"
 	"database/sql"
 	"database/sql/driver"
 	"errors"
+	"github.com/apache/thrift/lib/go/thrift"
 
-	"sqlflow.org/gohive/hiveserver2"
-	"sqlflow.org/gohive/thrift"
+	hiveserver2 "sqlflow.org/gohive/hiveserver2/gen-go/tcliservice"
 )
 
 type drv struct{}
@@ -44,13 +45,18 @@ func (d drv) Open(dsn string) (driver.Conn, error) {
 		config["use:database"] = cfg.DBName
 		s.Configuration = config
 	}
-	session, err := client.OpenSession(s)
+	session, err := client.OpenSession(context.Background(), s)
 	if err != nil {
 		return nil, err
 	}
 
 	options := hiveOptions{PollIntervalSeconds: 5, BatchSize: 100000}
-	conn := &hiveConnection{client, session.SessionHandle, options}
+	conn := &hiveConnection{
+		thrift:  client,
+		session: session.SessionHandle,
+		options: options,
+		ctx:     context.Background(),
+	}
 	return conn, nil
 }
 
