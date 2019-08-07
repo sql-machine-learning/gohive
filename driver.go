@@ -7,7 +7,7 @@ import (
 	"errors"
 	"github.com/apache/thrift/lib/go/thrift"
 
-	hiveserver2 "sqlflow.org/gohive/hiveserver2/gen-go/tcliservice"
+	hiveserver2 "github.com/sql-machine-learning/gohive/hiveserver2/gen-go/tcliservice"
 )
 
 type drv struct{}
