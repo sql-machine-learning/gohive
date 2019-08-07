@@ -42,7 +42,6 @@ func (d drv) Open(dsn string) (driver.Conn, error) {
 		return nil, fmt.Errorf("unrecognized auth mechanism: %s", cfg.Auth)
 	}
 	if err = transport.Open(); err != nil {
-		fmt.Printf("transport.Open failed: %v", err)
 		return nil, err
 	}
 
