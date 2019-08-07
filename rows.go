@@ -1,6 +1,7 @@
 package gohive
 
 import (
+	"context"
 	"database/sql/driver"
 	"errors"
 	"fmt"
@@ -8,7 +9,7 @@ import (
 	"reflect"
 	"time"
 
-	"sqlflow.org/gohive/hiveserver2"
+	hiveserver2 "github.com/sql-machine-learning/gohive/hiveserver2/gen-go/tcliservice"
 )
 
 // rowSet implements the interface database/sql/driver.Rows.
@@ -26,6 +27,8 @@ type rowSet struct {
 	// resultSet is column-oriented storage format
 	resultSet [][]interface{}
 	status    *hiveStatus
+
+	ctx context.Context
 }
 
 type hiveStatus struct {
@@ -141,7 +144,7 @@ func (r *rowSet) poll() error {
 	req := hiveserver2.NewTGetOperationStatusReq()
 	req.OperationHandle = r.operation
 
-	resp, err := r.thrift.GetOperationStatus(req)
+	resp, err := r.thrift.GetOperationStatus(r.ctx, req)
 	if err != nil {
 		return fmt.Errorf("Error getting status: %+v, %v", resp, err)
 	}
@@ -166,7 +169,7 @@ func (r *rowSet) wait() error {
 				metadataReq := hiveserver2.NewTGetResultSetMetadataReq()
 				metadataReq.OperationHandle = r.operation
 
-				metadataResp, err := r.thrift.GetResultSetMetadata(metadataReq)
+				metadataResp, err := r.thrift.GetResultSetMetadata(r.ctx, metadataReq)
 				if err != nil {
 					return err
 				}
@@ -190,7 +193,7 @@ func (r *rowSet) batchFetch() error {
 	fetchReq.Orientation = hiveserver2.TFetchOrientation_FETCH_NEXT
 	fetchReq.MaxRows = r.options.BatchSize
 
-	resp, err := r.thrift.FetchResults(fetchReq)
+	resp, err := r.thrift.FetchResults(r.ctx, fetchReq)
 	if err != nil {
 		return err
 	}
@@ -253,9 +256,7 @@ func (s hiveStatus) isFinished() bool {
 	return s.state != nil && *s.state == hiveserver2.TOperationState_FINISHED_STATE
 }
 
-func newRows(thrift *hiveserver2.TCLIServiceClient,
-	operation *hiveserver2.TOperationHandle,
-	options hiveOptions) driver.Rows {
+func newRows(thrift *hiveserver2.TCLIServiceClient, operation *hiveserver2.TOperationHandle, options hiveOptions, ctx context.Context) driver.Rows {
 	return &rowSet{thrift, operation, options, nil, nil,
-		0, nil, nil, nil}
+		0, nil, nil, nil, ctx}
 }
