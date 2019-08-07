@@ -7,6 +7,14 @@ branches:
 service:
   - docker
 
+install:
+  # Note(tony): TravisCI's native `go get ${gobuild_args} ./...` failed with
+  # `/usr/bin/ld: final link failed: Bad value`, the cause is the system linker
+  # being not up to date: https://github.com/golang/go/issues/15038
+  # So I decided to skip install, and go get inside sqlflow:latest image
+  # Ref build: https://travis-ci.com/sql-machine-learning/sqlflow/builds/107870583
+  - echo "skip install"
+
 script:
   # Please be aware that here we use the prebuilt Docker image
   # sqlflow/gohive:dev automatically built by DockerHub from
