@@ -2,6 +2,7 @@ package gohive
 
 import (
 	"database/sql"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -50,6 +51,7 @@ func TestColumnTypeName(t *testing.T) {
 	a := assert.New(t)
 	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
 	rows, err := db.Query("SELECT customerID, gender FROM train")
+	fmt.Println(err)
 	assert.Nil(t, err)
 	defer db.Close()
 	defer rows.Close()
