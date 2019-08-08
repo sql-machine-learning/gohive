@@ -14,6 +14,16 @@ func TestOpenConnection(t *testing.T) {
 	defer db.Close()
 }
 
+func TestOpenConnectionAgainstAuth(t *testing.T) {
+	db, _ := sql.Open("hive", "127.0.0.1:10000/churn?auth=PLAIN")
+	rows, err := db.Query("SELECT customerID, gender FROM train")
+	assert.EqualError(t, err, "Bad SASL negotiation status: 4 ()")
+	defer db.Close()
+	if err == nil {
+		defer rows.Close()
+	}
+}
+
 func TestQuery(t *testing.T) {
 	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
 	rows, err := db.Query("SELECT customerID, gender FROM train")

@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
-	"errors"
-	"github.com/apache/thrift/lib/go/thrift"
+	"fmt"
 
+	"github.com/apache/thrift/lib/go/thrift"
+	bgohive "github.com/beltran/gohive"
 	hiveserver2 "github.com/sql-machine-learning/gohive/hiveserver2/gen-go/tcliservice"
 )
 
@@ -17,23 +18,36 @@ func (d drv) Open(dsn string) (driver.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	transport, err := thrift.NewTSocket(cfg.Addr)
+	socket, err := thrift.NewTSocket(cfg.Addr)
 	if err != nil {
 		return nil, err
 	}
-
-	if err := transport.Open(); err != nil {
-		return nil, err
+	var transport thrift.TTransport
+	if cfg.Auth == "NOSASL" {
+		transport = thrift.NewTBufferedTransport(socket, 4096)
+		if transport == nil {
+			return nil, fmt.Errorf("BufferedTransport is nil")
+		}
+	} else if cfg.Auth == "PLAIN" || cfg.Auth == "GSSAPI" || cfg.Auth == "LDAP" {
+		saslCfg := map[string]string{
+			"username": cfg.User,
+			"password": cfg.Passwd,
+		}
+		transport, err = bgohive.NewTSaslTransport(socket, cfg.Addr, cfg.Auth, saslCfg)
+		if err != nil {
+			return nil, fmt.Errorf("create SasalTranposrt failed: %v", err)
+		}
+	} else {
+		return nil, fmt.Errorf("unrecognized auth mechanism: %s", cfg.Auth)
 	}
-
-	if transport == nil {
-		return nil, errors.New("nil thrift transport")
+	if err = transport.Open(); err != nil {
+		return nil, err
 	}
 
 	protocol := thrift.NewTBinaryProtocolFactoryDefault()
 	client := hiveserver2.NewTCLIServiceClientFactory(transport, protocol)
 	s := hiveserver2.NewTOpenSessionReq()
-	s.ClientProtocol = 6
+	s.ClientProtocol = hiveserver2.TProtocolVersion_HIVE_CLI_SERVICE_PROTOCOL_V6
 	if cfg.User != "" {
 		s.Username = &cfg.User
 		if cfg.Passwd != "" {
