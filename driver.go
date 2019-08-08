@@ -22,7 +22,6 @@ func (d drv) Open(dsn string) (driver.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	var transport thrift.TTransport
 	if cfg.Auth == "NOSASL" {
 		transport = thrift.NewTBufferedTransport(socket, 4096)

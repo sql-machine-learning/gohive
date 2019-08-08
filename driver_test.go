@@ -2,7 +2,6 @@ package gohive
 
 import (
 	"database/sql"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -13,6 +12,16 @@ func TestOpenConnection(t *testing.T) {
 	db, err := sql.Open("hive", "127.0.0.1:10000")
 	assert.Nil(t, err)
 	defer db.Close()
+}
+
+func TestOpenConnectionAgainstAuth(t *testing.T) {
+	db, _ := sql.Open("hive", "127.0.0.1:10000/churn?auth=PLAIN")
+	rows, err := db.Query("SELECT customerID, gender FROM train")
+	assert.EqualError(t, err, "Bad SASL negotiation status: 4 ()")
+	defer db.Close()
+	if err == nil {
+		defer rows.Close()
+	}
 }
 
 func TestQuery(t *testing.T) {
@@ -51,7 +60,6 @@ func TestColumnTypeName(t *testing.T) {
 	a := assert.New(t)
 	db, _ := sql.Open("hive", "127.0.0.1:10000/churn")
 	rows, err := db.Query("SELECT customerID, gender FROM train")
-	fmt.Println(err)
 	assert.Nil(t, err)
 	defer db.Close()
 	defer rows.Close()
