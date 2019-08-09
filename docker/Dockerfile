@@ -35,6 +35,7 @@ ENV HIVE_SITE_CONF_datanucleus_autoCreateSchema=false
 #ENV HIVE_SITE_CONF_hive_metastore_uris=thrift://hive-metastore:9083
 ENV HIVE_SITE_CONF_hive_server2_transport_mode=binary
 #ENV HIVE_SITE_CONF_hive_server2_use_SSL=false
+# Note: only the default authentication, may be replaced by WITH_HS2_PAM_AUTH=ON in entrypoint.sh.
 ENV HIVE_SITE_CONF_hive_server2_authentication=NOSASL
 ENV HIVE_SITE_CONF_hive_server2_enable_doAs=false
 ENV HIVE_SITE_CONF_hive_metastore_schema_verification=false
@@ -67,6 +68,13 @@ ENV YARN_CONF_yarn_resourcemanager_resource__tracker_address=resourcemanager:803
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod a+x /entrypoint.sh
 
+# install JPam for PAM authentication
+RUN wget https://jaist.dl.sourceforge.net/project/jpam/jpam/jpam-1.1/JPam-Linux_amd64-1.1.tgz && \
+    tar zxf JPam-Linux_amd64-1.1.tgz && \
+    cp JPam-1.1/libjpam.so /opt/hadoop-3.2.0/lib/native && \
+    rm -rf JPam-Linux_amd64-1.1.tgz
+RUN useradd sqlflow && echo 'sqlflow:sqlflow' | chpasswd
+   
 ENTRYPOINT ["/entrypoint.sh"]
 
 RUN mkdir /cmd

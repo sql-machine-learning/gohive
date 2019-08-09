@@ -31,6 +31,11 @@ function configure() {
     done
 }
 
+if [ "${WITH_HS2_PAM_AUTH:-OFF}" = "ON" ]; then
+    export HIVE_SITE_CONF_hive_server2_authentication=PAM
+    export HIVE_SITE_CONF_hive_server2_authentication_pam_services=login,sshd
+fi
+
 configure /etc/hadoop/core-site.xml core CORE_CONF
 configure /etc/hadoop/hdfs-site.xml hdfs HDFS_CONF
 configure /etc/hadoop/yarn-site.xml yarn YARN_CONF
