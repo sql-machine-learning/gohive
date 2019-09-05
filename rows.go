@@ -129,7 +129,7 @@ func (r *rowSet) ColumnTypeScanType(i int) reflect.Type {
 	case hiveserver2.TTypeId_FLOAT_TYPE:
 		return scanTypeFloat32
 	case hiveserver2.TTypeId_DOUBLE_TYPE:
-		return scanTypeInt64
+		return scanTypeFloat64
 	default:
 		return scanTypeUnknown
 	}
