@@ -3,7 +3,7 @@ package gohive
 import (
 	"database/sql/driver"
 
-	hiveserver2 "github.com/sqlflow.org/gohive/hiveserver2/gen-go/tcliservice"
+	hiveserver2 "sqlflow.org/gohive/hiveserver2/gen-go/tcliservice"
 )
 
 type hiveResult struct {
