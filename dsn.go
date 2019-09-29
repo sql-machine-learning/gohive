@@ -97,22 +97,13 @@ func (cfg *Config) FormatDSN() string {
 	if len(cfg.DBName) > 0 {
 		dsn = fmt.Sprintf("%s/%s", dsn, cfg.DBName)
 	}
-	queryExisted := false
+	dsn = fmt.Sprintf("%s?batch=%d", dsn, cfg.Batch)
 	if len(cfg.Auth) > 0 {
-		dsn = fmt.Sprintf("%s?auth=%s", dsn, cfg.Auth)
-		queryExisted = true
+		dsn += fmt.Sprintf("&auth=%s", cfg.Auth)
 	}
 	if len(cfg.SessionCfg) > 0 {
-		if !queryExisted {
-			dsn += "?"
-		}
 		for k, v := range cfg.SessionCfg {
-			if !queryExisted {
-				dsn += fmt.Sprintf("%s%s=%s", sessionConfPrefix, k, v)
-			} else {
-				dsn += fmt.Sprintf("&%s%s=%s", sessionConfPrefix, k, v)
-			}
-			queryExisted = true
+			dsn += fmt.Sprintf("&%s%s=%s", sessionConfPrefix, k, v)
 		}
 	}
 	return dsn

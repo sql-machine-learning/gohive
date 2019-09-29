@@ -15,10 +15,11 @@ func TestParseDSNWithSessionConf(t *testing.T) {
 		Addr:       "hiveserver",
 		DBName:     "mydb",
 		Auth:       "PLAIN",
+		Batch:      200,
 		SessionCfg: sc,
 	}
 	dsn := cfg.FormatDSN()
-	assert.Equal(t, dsn, "usr:pswd@hiveserver/mydb?auth=PLAIN&session.mapreduce_job_quenename=mr")
+	assert.Equal(t, dsn, "usr:pswd@hiveserver/mydb?batch=200&auth=PLAIN&session.mapreduce_job_quenename=mr")
 
 	cfg2, e := ParseDSN(dsn)
 	assert.Nil(t, e)
@@ -27,6 +28,7 @@ func TestParseDSNWithSessionConf(t *testing.T) {
 	assert.Equal(t, cfg.Addr, cfg2.Addr)
 	assert.Equal(t, cfg.DBName, cfg2.DBName)
 	assert.Equal(t, cfg.Auth, cfg2.Auth)
+	assert.Equal(t, cfg.Batch, cfg2.Batch)
 	sc, sc2 := cfg.SessionCfg, cfg2.SessionCfg
 	assert.Equal(t, len(sc), len(sc2))
 	for k, v := range sc {
@@ -44,6 +46,7 @@ func TestParseDSNWithAuth(t *testing.T) {
 	assert.Equal(t, cfg.Addr, "127.0.0.1")
 	assert.Equal(t, cfg.DBName, "mnist")
 	assert.Equal(t, cfg.Auth, "PLAIN")
+	assert.Equal(t, cfg.Batch, 10000)
 
 	cfg, e = ParseDSN("root@127.0.0.1/mnist")
 	assert.Nil(t, e)
