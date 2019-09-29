@@ -51,7 +51,9 @@ func (r *rowSet) Next(dest []driver.Value) error {
 	// First execution or reach the end of the current result set.
 	if r.resultSet == nil || r.offset >= len(r.resultSet[0]) {
 		r.offset = 0
-		r.batchFetch()
+		if err := r.batchFetch(); err != nil {
+			return err
+		}
 	}
 
 	if len(r.resultSet) <= 0 {
