@@ -11,8 +11,6 @@ import (
 	hiveserver2 "sqlflow.org/gohive/hiveserver2/gen-go/tcliservice"
 )
 
-const DEFAULT_BATCH_SIZE = 10000
-
 type drv struct{}
 
 func (d drv) Open(dsn string) (driver.Conn, error) {
@@ -66,7 +64,7 @@ func (d drv) Open(dsn string) (driver.Conn, error) {
 		return nil, err
 	}
 
-	options := hiveOptions{PollIntervalSeconds: 5, BatchSize: DEFAULT_BATCH_SIZE}
+	options := hiveOptions{PollIntervalSeconds: 5, BatchSize: int64(cfg.Batch)}
 	conn := &hiveConnection{
 		thrift:  client,
 		session: session.SessionHandle,

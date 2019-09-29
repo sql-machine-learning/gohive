@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -13,6 +14,7 @@ type Config struct {
 	Addr       string
 	DBName     string
 	Auth       string
+	Batch      int
 	SessionCfg map[string]string
 }
 
@@ -22,7 +24,13 @@ var (
 	reUserPasswd = regexp.MustCompile(`([^:@]+)(:[^:@]+)?@`)
 )
 
-const sessionConfPrefix = "session."
+const (
+	sessionConfPrefix = "session."
+	authConfName      = "auth"
+	defaultAuth       = "NOSASL"
+	batchSizeName     = "batch"
+	defaultBatchSize  = 10000
+)
 
 // ParseDSN requires DSN names in the format [user[:password]@]addr/dbname.
 func ParseDSN(dsn string) (*Config, error) {
@@ -50,13 +58,21 @@ func ParseDSN(dsn string) (*Config, error) {
 		}
 	}
 
-	auth := "NOSASL"
+	auth := defaultAuth
+	batch := defaultBatchSize
 	sc := make(map[string]string)
 	if len(sub[3]) > 0 && sub[3][0] == '?' {
 		qry, _ := url.ParseQuery(sub[3][1:])
-		if v, found := qry["auth"]; found {
+		if v, found := qry[authConfName]; found {
 			auth = v[0]
+		} else if v, found := qry[batchSizeName]; found {
+			bch, err := strconv.Atoi(v[0])
+			if err != nil {
+				return nil, err
+			}
+			batch = bch
 		}
+
 		for k, v := range qry {
 			if strings.HasPrefix(k, sessionConfPrefix) {
 				sc[k[len(sessionConfPrefix):]] = v[0]
@@ -70,6 +86,7 @@ func ParseDSN(dsn string) (*Config, error) {
 		Addr:       addr,
 		DBName:     dbname,
 		Auth:       auth,
+		Batch:      batch,
 		SessionCfg: sc,
 	}, nil
 }
