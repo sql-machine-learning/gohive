@@ -101,7 +101,7 @@ func TestParseDSNWithoutDBName(t *testing.T) {
 }
 
 func TestFormatDSNWithDBName(t *testing.T) {
-	ds := "user:passwd@127.0.0.1/mnist?auth=NOSASL"
+	ds := "user:passwd@127.0.0.1/mnist?batch=100000&auth=NOSASL"
 	cfg, e := ParseDSN(ds)
 	assert.Nil(t, e)
 
@@ -110,7 +110,7 @@ func TestFormatDSNWithDBName(t *testing.T) {
 }
 
 func TestFormatDSNWithoutDBName(t *testing.T) {
-	ds := "user:passwd@127.0.0.1?auth=NOSASL"
+	ds := "user:passwd@127.0.0.1?batch=100&auth=NOSASL"
 	cfg, e := ParseDSN(ds)
 	assert.Nil(t, e)
 

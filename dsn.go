@@ -63,9 +63,11 @@ func ParseDSN(dsn string) (*Config, error) {
 	sc := make(map[string]string)
 	if len(sub[3]) > 0 && sub[3][0] == '?' {
 		qry, _ := url.ParseQuery(sub[3][1:])
+
 		if v, found := qry[authConfName]; found {
 			auth = v[0]
-		} else if v, found := qry[batchSizeName]; found {
+		}
+		if v, found := qry[batchSizeName]; found {
 			bch, err := strconv.Atoi(v[0])
 			if err != nil {
 				return nil, err
@@ -97,7 +99,7 @@ func (cfg *Config) FormatDSN() string {
 	if len(cfg.DBName) > 0 {
 		dsn = fmt.Sprintf("%s/%s", dsn, cfg.DBName)
 	}
-	dsn = fmt.Sprintf("%s?batch=%d", dsn, cfg.Batch)
+	dsn += fmt.Sprintf("?batch=%d", cfg.Batch)
 	if len(cfg.Auth) > 0 {
 		dsn += fmt.Sprintf("&auth=%s", cfg.Auth)
 	}
