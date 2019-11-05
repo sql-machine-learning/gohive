@@ -34,6 +34,8 @@ func (d drv) Open(dsn string) (driver.Conn, error) {
 			"password": cfg.Passwd,
 		}
 		transport, err = bgohive.NewTSaslTransport(socket, cfg.Addr, cfg.Auth, saslCfg)
+		transport.SetMaxLength(cfg.Batch)
+
 		if err != nil {
 			return nil, fmt.Errorf("create SasalTranposrt failed: %v", err)
 		}

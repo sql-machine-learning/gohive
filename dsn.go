@@ -14,7 +14,7 @@ type Config struct {
 	Addr       string
 	DBName     string
 	Auth       string
-	Batch      int
+	Batch      uint32
 	SessionCfg map[string]string
 }
 
@@ -58,8 +58,9 @@ func ParseDSN(dsn string) (*Config, error) {
 		}
 	}
 
+	var batch uint32
+	batch = defaultBatchSize
 	auth := defaultAuth
-	batch := defaultBatchSize
 	sc := make(map[string]string)
 	if len(sub[3]) > 0 && sub[3][0] == '?' {
 		qry, _ := url.ParseQuery(sub[3][1:])
@@ -68,11 +69,11 @@ func ParseDSN(dsn string) (*Config, error) {
 			auth = v[0]
 		}
 		if v, found := qry[batchSizeName]; found {
-			bch, err := strconv.Atoi(v[0])
+			bch, err := strconv.ParseUint(v[0], 10, 32)
 			if err != nil {
 				return nil, err
 			}
-			batch = bch
+			batch = uint32(bch)
 		}
 
 		for k, v := range qry {
