@@ -33,10 +33,12 @@ func (d drv) Open(dsn string) (driver.Conn, error) {
 			"username": cfg.User,
 			"password": cfg.Passwd,
 		}
-		transport, err = bgohive.NewTSaslTransport(socket, cfg.Addr, cfg.Auth, saslCfg)
+		bgTransport, err := bgohive.NewTSaslTransport(socket, cfg.Addr, cfg.Auth, saslCfg)
 		if err != nil {
 			return nil, fmt.Errorf("create SasalTranposrt failed: %v", err)
 		}
+		bgTransport.SetMaxLength(uint32(cfg.Batch))
+		transport = bgTransport
 	} else {
 		return nil, fmt.Errorf("unrecognized auth mechanism: %s", cfg.Auth)
 	}
