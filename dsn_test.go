@@ -46,7 +46,7 @@ func TestParseDSNWithAuth(t *testing.T) {
 	assert.Equal(t, cfg.Addr, "127.0.0.1")
 	assert.Equal(t, cfg.DBName, "mnist")
 	assert.Equal(t, cfg.Auth, "PLAIN")
-	assert.Equal(t, cfg.Batch, uint32(10000))
+	assert.Equal(t, cfg.Batch, 10000)
 
 	cfg, e = ParseDSN("root@127.0.0.1/mnist")
 	assert.Nil(t, e)
