@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install Hadoop.
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
 ENV HADOOP_VERSION 3.2.0 
-ENV HADOOP_URL https://archive.apache.org/dist/hadoop/common/stable/hadoop-$HADOOP_VERSION.tar.gz
+ENV HADOOP_URL https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz
 RUN set -x \
     && curl -fsSL "$HADOOP_URL" -o /tmp/hadoop.tar.gz \
     && tar -xzf /tmp/hadoop.tar.gz -C /opt/ \
