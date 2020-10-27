@@ -11,7 +11,7 @@ func TestParseDSNWithSessionConf(t *testing.T) {
 	sc["mapreduce_job_quenename"] = "mr"
 	cfg := &Config{
 		User:       "usr",
-		Passwd:     "pswd",
+		Passwd:     "ps@wd",
 		Addr:       "hiveserver",
 		DBName:     "mydb",
 		Auth:       "PLAIN",
@@ -19,7 +19,7 @@ func TestParseDSNWithSessionConf(t *testing.T) {
 		SessionCfg: sc,
 	}
 	dsn := cfg.FormatDSN()
-	assert.Equal(t, dsn, "usr:pswd@hiveserver/mydb?batch=200&auth=PLAIN&session.mapreduce_job_quenename=mr")
+	assert.Equal(t, dsn, "usr:ps@wd@hiveserver/mydb?batch=200&auth=PLAIN&session.mapreduce_job_quenename=mr")
 
 	cfg2, e := ParseDSN(dsn)
 	assert.Nil(t, e)
