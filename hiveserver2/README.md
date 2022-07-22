@@ -2,12 +2,18 @@
 
 For the convenience to access Hive from clients in various languages, the Hive developers created Hive Server, which is a Thrift service.  The currently well-used version is known as Hive Server 2.
 
-To write a Hive Server 2 client in Go, we need to use the `thrift` command to compile the Thrift service definition file [`TCLIService.thrift`](https://github.com/apache/hive/blob/master/service-rpc/if/TCLIService.thrift) from Hive Server 2 codebase, into Go source code.
-
-According to their [blog post](https://cwiki.apache.org/confluence/display/Hive/HowToContribute), the Hive developers for some reasons locks the Thrift version to 0.9.3, which is pretty old that you might not want to install it on your computer.  Thanks to the Thrift team, who releases Thrift in Docker images and we can use the 0.9.3 version of Docker image for the compilation:
+To write a Hive Server 2 client in Go, we need to use the `thrift` command to compile the Thrift service definition file [`TCLIService.thrift`](https://github.com/apache/hive/blob/master/service-rpc/if/TCLIService.thrift) from Hive Server 2 codebase, into Go source code:
 
 ```bash
-docker run --rm -it -v $PWD:/work -w /work thrift:0.9.3 thrift -r --gen go TCLIService.thrift
+curl -sS https://raw.githubusercontent.com/apache/hive/rel/release-3.1.3/service-rpc/if/TCLIService.thrift > TCLIService.thrift
+```
+
+According to their [blog post](https://cwiki.apache.org/confluence/display/Hive/HowToContribute#HowToContribute-GeneratingThriftCode), the Hive developers recommends to use Thrift v0.14.1 to generate the Hive's auto-generated Thrift code:
+
+```bash
+docker run --rm -it -v $PWD:/work -w /work \
+    anthonyroussel/thrift:0.14.1 \
+    thrift -r --gen go TCLIService.thrift
 ```
 
 The above command generates Go source code in the subdirectory `./gen-go/tcliservice`.
