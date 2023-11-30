@@ -21,7 +21,7 @@ type Config struct {
 var (
 	// Regexp syntax: https://github.com/google/re2/wiki/Syntax
 	reDSN        = regexp.MustCompile(`(.+@)?([^@|^?]+)\\?(.*)`)
-	reUserPasswd = regexp.MustCompile(`([^:@]+)(:[^:@]+)?@`)
+	reUserPasswd = regexp.MustCompile(`([^:@]+)(:[^:]+)?@`)
 )
 
 const (
