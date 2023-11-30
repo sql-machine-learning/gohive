@@ -33,7 +33,7 @@ func (d drv) Open(dsn string) (driver.Conn, error) {
 			"username": cfg.User,
 			"password": cfg.Passwd,
 		}
-		bgTransport, err := bgohive.NewTSaslTransport(socket, cfg.Addr, cfg.Auth, saslCfg)
+		bgTransport, err := bgohive.NewTSaslTransport(socket, cfg.Addr, cfg.Auth, saslCfg, bgohive.DEFAULT_MAX_LENGTH)
 		if err != nil {
 			return nil, fmt.Errorf("create SasalTranposrt failed: %v", err)
 		}
