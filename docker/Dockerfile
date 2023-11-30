@@ -1,17 +1,18 @@
-FROM ubuntu:16.04
-  
+FROM ubuntu:22.04
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  curl wget \
-  python3.5 \
+  curl wget procps \
+  python3 \
   python3-pip \
   git \
   vim \
-  openjdk-8-jdk \
-  net-tools
+  openjdk-8-jdk-headless \
+  net-tools \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install Hadoop.
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
-ENV HADOOP_VERSION 3.2.0 
+ENV HADOOP_VERSION 3.3.3
 ENV HADOOP_URL https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz
 RUN set -x \
     && curl -fsSL "$HADOOP_URL" -o /tmp/hadoop.tar.gz \
@@ -71,10 +72,10 @@ RUN chmod a+x /entrypoint.sh
 # install JPam for PAM authentication
 RUN wget https://jaist.dl.sourceforge.net/project/jpam/jpam/jpam-1.1/JPam-Linux_amd64-1.1.tgz && \
     tar zxf JPam-Linux_amd64-1.1.tgz && \
-    cp JPam-1.1/libjpam.so /opt/hadoop-3.2.0/lib/native && \
+    cp JPam-1.1/libjpam.so /opt/hadoop-3.3.3/lib/native && \
     rm -rf JPam-Linux_amd64-1.1.tgz
 RUN useradd sqlflow && echo 'sqlflow:sqlflow' | chpasswd
-   
+
 ENTRYPOINT ["/entrypoint.sh"]
 
 RUN mkdir /cmd
@@ -111,7 +112,7 @@ RUN chmod a+x /cmd/start_nodemanager.sh
 
 # For Hive
 ARG HIVE_VERSION
-ENV HIVE_VERSION=${HIVE_VERSION:-2.3.2}
+ENV HIVE_VERSION=${HIVE_VERSION:-3.1.3}
 ENV HIVE_HOME /opt/hive
 ENV PATH $HIVE_HOME/bin:$PATH
 ENV HADOOP_HOME /opt/hadoop-$HADOOP_VERSION
@@ -142,11 +143,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends mysql-server
 VOLUME /var/lib/mysql
 
 WORKDIR /tmp
-RUN wget --quiet https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.47.tar.gz
-RUN tar -xzf mysql-connector-java-5.1.47.tar.gz
-RUN cp mysql-connector-java-5.1.47/mysql-connector-java-5.1.47.jar /opt/hive/lib/ 
-RUN rm -rf /tmp/mysql-connector-java-5.1.47.tar.gz
-RUN rm -rf /tmp/mysql-connector-java-5.1.47
+RUN wget --quiet https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.29.tar.gz
+RUN tar -xzf mysql-connector-java-8.0.29.tar.gz
+RUN cp mysql-connector-java-8.0.29/mysql-connector-java-8.0.29.jar /opt/hive/lib/
+RUN rm -rf /tmp/mysql-connector-java-8.0.29.tar.gz
+RUN rm -rf /tmp/mysql-connector-java-8.0.29
 
 RUN mkdir /dataset
 COPY dataset/popularize_churn.sql /dataset/popularize_churn.sql
@@ -154,9 +155,9 @@ COPY dataset/popularize_iris.sql /dataset/popularize_iris.sql
 COPY dataset/create_model_db.sql /dataset/create_model_db.sql
 
 # Install the Go compiler.
-RUN wget --quiet https://dl.google.com/go/go1.11.5.linux-amd64.tar.gz
-RUN tar -C /usr/local -xzf go1.11.5.linux-amd64.tar.gz
-RUN rm go1.11.5.linux-amd64.tar.gz
+RUN wget --quiet https://dl.google.com/go/go1.18.4.linux-amd64.tar.gz
+RUN tar -C /usr/local -xzf go1.18.4.linux-amd64.tar.gz
+RUN rm go1.18.4.linux-amd64.tar.gz
 RUN apt-get install -y --no-install-recommends build-essential
 ENV PATH $PATH:/usr/local/go/bin
 
@@ -172,20 +173,20 @@ RUN cd / && curl -sL https://repo.continuum.io/miniconda/Miniconda3-latest-Linux
     rm mconda-install.sh
 ENV PATH="/miniconda/bin:$PATH"
 
-RUN ls /miniconda/bin && /miniconda/bin/conda create -y -q -n sqlflow-dev python=3.6 && \
+RUN ls /miniconda/bin && /miniconda/bin/conda create -y -q -n sqlflow-dev python=3.10 && \
     echo ". /miniconda/etc/profile.d/conda.sh" >> ~/.bashrc && \
     echo "source activate sqlflow-dev" >> ~/.bashrc && \
     bash -c "source activate sqlflow-dev && python -m pip install \
-    tensorflow==2.0.0-alpha0 \
+    tensorflow==2.9.1 \
     mysql-connector-python \
     impyla \
     jupyter"
 # Install protobuf
-RUN wget --quiet https://github.com/protocolbuffers/protobuf/releases/download/v3.6.1/protoc-3.6.1-linux-x86_64.zip && \
+RUN wget --quiet https://github.com/protocolbuffers/protobuf/releases/download/v21.3/protoc-21.3-linux-x86_64.zip && \
 apt-get install -y unzip && \
-unzip -qq protoc-3.6.1-linux-x86_64.zip -d /usr/local && \
-rm protoc-3.6.1-linux-x86_64.zip && \
-go get github.com/golang/protobuf/protoc-gen-go && \
+unzip -qq protoc-21.3-linux-x86_64.zip -d /usr/local && \
+rm protoc-21.3-linux-x86_64.zip && \
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && \
 mv /go/bin/protoc-gen-go /usr/local/bin/
 
 RUN echo "go get -t sqlflow.org/gohive && go test -v sqlflow.org/gohive" > /build_and_test.bash
