@@ -117,3 +117,15 @@ func TestFormatDSNWithoutDBName(t *testing.T) {
 	ds2 := cfg.FormatDSN()
 	assert.Equal(t, ds2, ds)
 }
+
+func TestFormatDSNColumnsWithoutTableNameName(t *testing.T) {
+	ds := "user:passwd@127.0.0.1?columns_without_table_name=true"
+	cfg, e := ParseDSN(ds)
+	assert.Nil(t, e)
+	assert.True(t, cfg.ColumnsWithoutTableName)
+
+	ds2 := "user:passwd@127.0.0.1"
+	cfg2, e := ParseDSN(ds2)
+	assert.Nil(t, e)
+	assert.False(t, cfg2.ColumnsWithoutTableName)
+}

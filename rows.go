@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"strings"
 	"time"
 
 	hiveserver2 "sqlflow.org/gohive/hiveserver2/gen-go/tcliservice"
@@ -86,11 +87,23 @@ func (r *rowSet) Columns() []string {
 		}
 		ret := make([]string, len(r.columns))
 		for i, col := range r.columns {
+			if r.options.ColumnsWithoutTableName {
+				ret[i] = columnRemoveTable(col.ColumnName)
+				continue
+			}
 			ret[i] = col.ColumnName
 		}
 		r.columnStrs = ret
 	}
 	return r.columnStrs
+}
+
+func columnRemoveTable(n string) string {
+	index := strings.Index(n, ".")
+	if index == -1 {
+		return n
+	}
+	return n[index+1:]
 }
 
 func (r *rowSet) Close() (err error) {
@@ -211,7 +224,12 @@ func (r *rowSet) batchFetch() error {
 	r.resultSet = make([][]interface{}, colLen)
 
 	for i := 0; i < colLen; i++ {
-		v, length := convertColumn(rs[i])
+		typeDesc := r.columns[i].TypeDesc
+		v, length, err := convertColumn(rs[i], typeDesc)
+		if err != nil {
+			return fmt.Errorf("convertColumn failed: %w, col_idx: %d, value: %+v, type: %+v",
+				err, i, rs[i], typeDesc)
+		}
 		c := make([]interface{}, length)
 		for j := 0; j < length; j++ {
 			c[j] = reflect.ValueOf(v).Index(j).Interface()
@@ -221,25 +239,73 @@ func (r *rowSet) batchFetch() error {
 	return nil
 }
 
-func convertColumn(col *hiveserver2.TColumn) (colValues interface{}, length int) {
+var (
+	dateTypeSet = map[hiveserver2.TTypeId]bool{
+		hiveserver2.TTypeId_DATE_TYPE:      true,
+		hiveserver2.TTypeId_TIMESTAMP_TYPE: true,
+		//hiveserver2.TTypeId_TIMESTAMPLOCALTZ_TYPE: true, // TODO: suport TIMESTAMPLOCALTZ
+	}
+)
+
+func convertColumn(col *hiveserver2.TColumn, typeDesc *hiveserver2.TTypeDesc) (colValues interface{}, length int, err error) {
+	types := typeDesc.GetTypes()
+	var primitiveTypeID hiveserver2.TTypeId
+	var typ *hiveserver2.TTypeEntry
+	if len(types) > 0 {
+		typ = types[0]
+		if typ != nil && typ.GetPrimitiveEntry() != nil {
+			primitiveTypeID = typ.GetPrimitiveEntry().GetType()
+		}
+	}
 	switch {
 	case col.IsSetStringVal():
-		return col.GetStringVal().GetValues(), len(col.GetStringVal().GetValues())
+		strValues, length := col.GetStringVal().GetValues(), len(col.GetStringVal().GetValues())
+		if dateTypeSet[primitiveTypeID] {
+			colValues, err = convertToDate(strValues, primitiveTypeID)
+			if err != nil {
+				return nil, 0, err
+			}
+			return colValues, length, nil
+		}
+		return strValues, length, nil
 	case col.IsSetBoolVal():
-		return col.GetBoolVal().GetValues(), len(col.GetBoolVal().GetValues())
+		return col.GetBoolVal().GetValues(), len(col.GetBoolVal().GetValues()), nil
 	case col.IsSetByteVal():
-		return col.GetByteVal().GetValues(), len(col.GetByteVal().GetValues())
+		return col.GetByteVal().GetValues(), len(col.GetByteVal().GetValues()), nil
 	case col.IsSetI16Val():
-		return col.GetI16Val().GetValues(), len(col.GetI16Val().GetValues())
+		return col.GetI16Val().GetValues(), len(col.GetI16Val().GetValues()), nil
 	case col.IsSetI32Val():
-		return col.GetI32Val().GetValues(), len(col.GetI32Val().GetValues())
+		return col.GetI32Val().GetValues(), len(col.GetI32Val().GetValues()), nil
 	case col.IsSetI64Val():
-		return col.GetI64Val().GetValues(), len(col.GetI64Val().GetValues())
+		return col.GetI64Val().GetValues(), len(col.GetI64Val().GetValues()), nil
 	case col.IsSetDoubleVal():
-		return col.GetDoubleVal().GetValues(), len(col.GetDoubleVal().GetValues())
+		return col.GetDoubleVal().GetValues(), len(col.GetDoubleVal().GetValues()), nil
 	default:
-		return nil, 0
+		return nil, 0, nil
 	}
+}
+
+func convertToDate(values []string, primitiveTypeID hiveserver2.TTypeId) (res []time.Time, err error) {
+	for _, v := range values {
+		switch primitiveTypeID {
+		case hiveserver2.TTypeId_DATE_TYPE:
+			t, err := time.ParseInLocation(DateLayout, v, time.Local)
+			if err != nil {
+				return nil, err
+			}
+			res = append(res, t)
+		case hiveserver2.TTypeId_TIMESTAMP_TYPE:
+			t, err := time.ParseInLocation(TimeStampLayout, v, time.Local)
+			if err != nil {
+				return nil, err
+			}
+			res = append(res, t)
+		//case hiveserver2.TTypeId_TIMESTAMPLOCALTZ_TYPE: // TODO: support TIMESTAMPLOCALTZ
+		default:
+			return nil, fmt.Errorf("convertToDate failed, unsupported type %s", primitiveTypeID)
+		}
+	}
+	return res, nil
 }
 
 func (s hiveStatus) isStopped() bool {

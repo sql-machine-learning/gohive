@@ -9,13 +9,14 @@ import (
 )
 
 type Config struct {
-	User       string
-	Passwd     string
-	Addr       string
-	DBName     string
-	Auth       string
-	Batch      int
-	SessionCfg map[string]string
+	User                    string
+	Passwd                  string
+	Addr                    string
+	DBName                  string
+	Auth                    string
+	Batch                   int
+	ColumnsWithoutTableName bool // column names not contains table name
+	SessionCfg              map[string]string
 }
 
 var (
@@ -25,11 +26,12 @@ var (
 )
 
 const (
-	sessionConfPrefix = "session."
-	authConfName      = "auth"
-	defaultAuth       = "NOSASL"
-	batchSizeName     = "batch"
-	defaultBatchSize  = 10000
+	sessionConfPrefix           = "session."
+	authConfName                = "auth"
+	defaultAuth                 = "NOSASL"
+	batchSizeName               = "batch"
+	columnsWithoutTableNameName = "columns_without_table_name"
+	defaultBatchSize            = 10000
 )
 
 // ParseDSN requires DSN names in the format [user[:password]@]addr/dbname.
@@ -60,6 +62,8 @@ func ParseDSN(dsn string) (*Config, error) {
 
 	auth := defaultAuth
 	batch := defaultBatchSize
+	columnsWithoutTableName := false
+	var err error
 	sc := make(map[string]string)
 	if len(sub[3]) > 0 && sub[3][0] == '?' {
 		qry, _ := url.ParseQuery(sub[3][1:])
@@ -74,6 +78,12 @@ func ParseDSN(dsn string) (*Config, error) {
 			}
 			batch = bch
 		}
+		if v, found := qry[columnsWithoutTableNameName]; found {
+			columnsWithoutTableName, err = strconv.ParseBool(v[0])
+			if err != nil {
+				return nil, err
+			}
+		}
 
 		for k, v := range qry {
 			if strings.HasPrefix(k, sessionConfPrefix) {
@@ -83,13 +93,14 @@ func ParseDSN(dsn string) (*Config, error) {
 	}
 
 	return &Config{
-		User:       user,
-		Passwd:     passwd,
-		Addr:       addr,
-		DBName:     dbname,
-		Auth:       auth,
-		Batch:      batch,
-		SessionCfg: sc,
+		User:                    user,
+		Passwd:                  passwd,
+		Addr:                    addr,
+		DBName:                  dbname,
+		Auth:                    auth,
+		Batch:                   batch,
+		ColumnsWithoutTableName: columnsWithoutTableName,
+		SessionCfg:              sc,
 	}, nil
 }
 
@@ -102,6 +113,9 @@ func (cfg *Config) FormatDSN() string {
 	dsn += fmt.Sprintf("?batch=%d", cfg.Batch)
 	if len(cfg.Auth) > 0 {
 		dsn += fmt.Sprintf("&auth=%s", cfg.Auth)
+	}
+	if cfg.ColumnsWithoutTableName {
+		dsn += "&columns_without_table_name=true"
 	}
 	if len(cfg.SessionCfg) > 0 {
 		for k, v := range cfg.SessionCfg {

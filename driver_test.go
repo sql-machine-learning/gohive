@@ -2,6 +2,7 @@ package gohive
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"os"
 	"reflect"
@@ -160,6 +161,14 @@ func TestExec(t *testing.T) {
 	a := assert.New(t)
 	db, _ := newDB("churn")
 	_, err := db.Exec("insert into churn.test (gender) values ('Female')")
+	defer db.Close()
+	a.NoError(err)
+}
+
+func TestExecArgs(t *testing.T) {
+	a := assert.New(t)
+	db, _ := newDB("churn")
+	_, err := db.Exec("insert into churn.test (gender) values (?)", []driver.Value{"Female"})
 	defer db.Close()
 	a.NoError(err)
 }

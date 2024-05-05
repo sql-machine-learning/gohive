@@ -11,15 +11,17 @@ import (
 
 // hiveOptions for opened Hive sessions.
 type hiveOptions struct {
-	PollIntervalSeconds int64
-	BatchSize           int64
+	PollIntervalSeconds     int64
+	BatchSize               int64
+	ColumnsWithoutTableName bool // column names not contains table name
 }
 
 type hiveConnection struct {
-	thrift  *hiveserver2.TCLIServiceClient
-	session *hiveserver2.TSessionHandle
-	options hiveOptions
-	ctx     context.Context
+	thrift             *hiveserver2.TCLIServiceClient
+	session            *hiveserver2.TSessionHandle
+	options            hiveOptions
+	ctx                context.Context
+	paramsInterpolator *ParamsInterpolator
 }
 
 func (c *hiveConnection) Begin() (driver.Tx, error) {
@@ -81,6 +83,13 @@ func removeLastSemicolon(s string) string {
 }
 
 func (c *hiveConnection) execute(ctx context.Context, query string, args []driver.NamedValue) (*hiveserver2.TExecuteStatementResp, error) {
+	var err error
+	if len(args) != 0 {
+		query, err = c.paramsInterpolator.InterpolateNamedValue(query, args)
+		if err != nil {
+			return nil, err
+		}
+	}
 	executeReq := hiveserver2.NewTExecuteStatementReq()
 	executeReq.SessionHandle = c.session
 	executeReq.Statement = removeLastSemicolon(query)

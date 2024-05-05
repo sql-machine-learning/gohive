@@ -66,12 +66,17 @@ func (d drv) Open(dsn string) (driver.Conn, error) {
 		return nil, err
 	}
 
-	options := hiveOptions{PollIntervalSeconds: 5, BatchSize: int64(cfg.Batch)}
+	options := hiveOptions{
+		PollIntervalSeconds:     5,
+		BatchSize:               int64(cfg.Batch),
+		ColumnsWithoutTableName: cfg.ColumnsWithoutTableName,
+	}
 	conn := &hiveConnection{
-		thrift:  client,
-		session: session.SessionHandle,
-		options: options,
-		ctx:     context.Background(),
+		thrift:             client,
+		session:            session.SessionHandle,
+		options:            options,
+		ctx:                context.Background(),
+		paramsInterpolator: NewParamsInterpolator(),
 	}
 	return conn, nil
 }
